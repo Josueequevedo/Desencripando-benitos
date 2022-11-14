@@ -1,18 +1,90 @@
-# Build and Release Folders
-bin-debug/
-bin-release/
-[Oo]bj/
-[Bb]in/
+eusing System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using System; 
 
-# Other files and folders
-.settings/
+namespace Desencriptar_benitos
+{
+    class Program
+    {
+        //Aqui declaramos parametros
+        private static RSAParameters llavepublica;
+        private static RSAParameters llaveprivada;
 
-# Executables
-*.swf
-*.air
-*.ipa
-*.apk
 
-# Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
-# should NOT be excluded as they contain compiler settings and other important
-# information for Eclipse / Flash Builder.
+        //Aqui declaramos el tamaño de las llaves premium y pobre
+        public enum keysizes
+        {
+            size_512 = 512,
+            size_1024 = 1024,
+            size_2048 = 2048,
+            size_952 = 952,
+            size_1369 = 1369
+        };
+
+        static void Main(string[] args)
+        {
+            string message = Console.ReadLine();
+
+            GenerarLLaves();
+            byte[] encriptar = Encriptar(Encoding.UTF8.GetBytes(message));
+            byte[] desencriptar = Desencritar(encriptar);
+
+
+            Console.WriteLine("Original\n\t" + message + "\n");
+            Console.WriteLine("Encriptado\n\t" + BitConverter.ToString(encriptar).Replace("-", "") + "\n");
+            Console.WriteLine("Desencriptado\n\t"+Encoding.UTF8.GetString(desencriptar));
+            
+
+            Console.ReadLine();
+        }
+
+        static void GenerarLLaves()
+        {
+
+            using (var rsa = new RSACryptoServiceProvider(2048))
+            {
+
+                rsa.PersistKeyInCsp = false;
+                llavepublica = rsa.ExportParameters(false);
+                llaveprivada = rsa.ExportParameters(true);
+            }
+
+        }
+
+        static byte[] Encriptar(byte[] input)
+        {
+
+            byte[] encriptado;
+            using (var rsa = new RSACryptoServiceProvider(2048))
+            {
+
+                rsa.PersistKeyInCsp = false;
+                rsa.ImportParameters(llavepublica);
+                encriptado = rsa.Encrypt(input, true);
+
+            }
+            return encriptado;
+
+        }
+
+        static byte[] Desencritar(byte[] input)
+        {
+
+            byte[] desencriptado;
+            using (var rsa = new RSACryptoServiceProvider(2048))
+            {
+
+                rsa.PersistKeyInCsp = false;
+                rsa.ImportParameters(llaveprivada);
+                desencriptado = rsa.Decrypt(input, true);
+    
+            }
+            return desencriptado;
+
+        }
+
+    }
+}
